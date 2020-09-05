@@ -1,0 +1,8 @@
+LOS PASOS NO ESTAN EN ORDEN (TOMELO EN CUENTA)
+
+-Usar el codigo del .h y .cpp de la carpeta TaTeTi_Libs para armar el ta te ti en el servidor.
+-Utilizar las librerias de gentile para posicionar los chats y el tablero del servidor.
+-Utilizar los trabajos de multijugador para hacer al cliente y al servidor.
+-Mirar la repeticion de la clase para hacer y enviar la estructura del cliente al servidor.
+-Utilizar la estructura de mensaje para indicar input de donde posicionar tu jugada ya sea X o O.
+-Hacer que el servidor espere que finalice un turno para que el otro jugador juegue.
