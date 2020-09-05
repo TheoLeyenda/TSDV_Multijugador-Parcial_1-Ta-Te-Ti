@@ -6,3 +6,5 @@ LOS PASOS NO ESTAN EN ORDEN (TOMELO EN CUENTA)
 -Mirar la repeticion de la clase para hacer y enviar la estructura del cliente al servidor.
 -Utilizar la estructura de mensaje para indicar input de donde posicionar tu jugada ya sea X o O.
 -Hacer que el servidor espere que finalice un turno para que el otro jugador juegue.
+
+Hacer un copy: strcpy_s(msg.data, "sarasa");
