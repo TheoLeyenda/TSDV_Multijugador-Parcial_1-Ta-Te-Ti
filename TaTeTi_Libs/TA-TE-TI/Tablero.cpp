@@ -14,7 +14,8 @@ public:
 };
 */
 #include "Tablero.h"
-Tablero::Tablero(int tipo){
+#include "../../Librerias gentille/Libreria.h"
+Tablero::Tablero(int tipo, float x, float y){
 	for(int i = 0; i<MAX_FIL; i++){
 		for(int j = 0; j<MAX_COL; j++){
 			_tablero[i][j] = '0';
@@ -55,14 +56,25 @@ Tablero::Tablero(int tipo){
 	}
 	_ganador = '0';
 	_repetirTurno = false;
+	_posX = x;
+	_posY = y;
 	//Listo
 }
-void Tablero::mostrarTablero(){
+void Tablero::mostrarTablero(float x,float y){
+	gotoxy(x -5, y - 2);
+	cout<<"--- TA TE TI ---"<<endl;
+	gotoxy(x, y);
 	cout<<_tablero[0][0]<<"|"<<_tablero[1][0]<<"|"<<_tablero[2][0]<<endl;
+	gotoxy(x, y + 1);
 	cout<<"-----"<<endl;
+	gotoxy(x, y + 2);
 	cout<<_tablero[0][1]<<"|"<<_tablero[1][1]<<"|"<<_tablero[2][1]<<endl;
+	gotoxy(x, y + 3);
 	cout<<"-----"<<endl;
+	gotoxy(x, y + 4);
 	cout<<_tablero[0][2]<<"|"<<_tablero[1][2]<<"|"<<_tablero[2][2]<<endl;
+	gotoxy(x - 5, y + 6);
+	cout << "----------------" << endl;
 	//Listo
 }
 void Tablero::colocarJugador(int fila, int columna, char jugador){
@@ -190,4 +202,13 @@ void Tablero::setRepetirTurno(bool repetirTurno){
 }
 bool Tablero::getRepetirTurno(){
 	return _repetirTurno;
+}
+
+float Tablero::GetPosX() 
+{
+	return _posX;
+}
+float Tablero::GetPosY() 
+{
+	return _posY;
 }

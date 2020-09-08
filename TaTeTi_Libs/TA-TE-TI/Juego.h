@@ -18,7 +18,7 @@ private:
 	int _opcion;
 	bool _primerTurno;
 public:
-	Juego();
+	Juego(float x, float y);
 	~Juego();
 	void init();
 	void input();

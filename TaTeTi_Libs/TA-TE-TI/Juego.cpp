@@ -19,14 +19,16 @@ public:
 };
 */
 #include "Juego.h"
-Juego::Juego(){
+Juego::Juego(float x, float y){
 	cout<<"Desea jugar con numeros de referencia o sin numeros de referencia ?"<<endl;
 	cout<<"1.Con numeros de referencia"<<endl;
 	cout<<"2.Sin numeros de referencia"<<endl;
 	cout<<"opcion:";
 	cin>>_opcion;
-	_tablero = new Tablero(_opcion);
 	system("cls");
+	cout << "TA-TE-TI" << endl;
+	_tablero = new Tablero(_opcion, x, y);
+	
 }
 Juego::~Juego(){
 	if(_tablero!= NULL){
@@ -175,32 +177,32 @@ void Juego::update(){
 }
 void Juego::draw(){
 	gotoxy(15,1);
-	cout<<"Jugador X: "<<_puntajeJ1;
+	//cout<<"Jugador X: "<<_puntajeJ1;
 	gotoxy(30,1);
-	cout<<"Jugador O: "<<_puntajeJ2<<endl;
-	_tablero->mostrarTablero();
+	//cout<<"Jugador O: "<<_puntajeJ2<<endl;
+	_tablero->mostrarTablero(_tablero->GetPosX(),_tablero->GetPosY());
 }
 void Juego::result(){
 	system("cls");
 	if(gameOver()){
 		gotoxy(12,12);
 		if(_ganador!= 'N'){
-			cout<<"esta ronda la ha ganado el/la "<<_tablero->getGanador()<<endl<<endl<<endl;
+			//cout<<"esta ronda la ha ganado el/la "<<_tablero->getGanador()<<endl<<endl<<endl;
 		}
 		if(_ganador == 'N'){
 			gotoxy(22,12);
-			cout<<"            Empate"<<endl<<endl<<endl;
+			//cout<<"            Empate"<<endl<<endl<<endl;
 		}
-		cout<<"terminar Juego? si:1/no:0"<<endl;
-		cout<<"opcion:";
+		//cout<<"terminar Juego? si:1/no:0"<<endl;
+		//cout<<"opcion:";
 		cin>>_opcion;
 		if(_opcion == 0){
 			system("cls");
 			_gameOver = false;
-			cout<<"Desea jugar con numeros de referencia o sin numeros de referencia ?"<<endl;
-			cout<<"1.Con numeros de referencia"<<endl;
-			cout<<"2.Sin numeros de referencia"<<endl;
-			cout<<"opcion:";
+			//cout<<"Desea jugar con numeros de referencia o sin numeros de referencia ?"<<endl;
+			//cout<<"1.Con numeros de referencia"<<endl;
+			//cout<<"2.Sin numeros de referencia"<<endl;
+			//cout<<"opcion:";
 			cin>>_opcion;
 			_primerTurno = true;
 			_tablero->reiniciarTablero(_opcion);

@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{B913599D-01A6-47CF-98EA-983A3004197F}</ProjectGuid>
-    <RootNamespace>TaTeTiServer</RootNamespace>
+    <ProjectGuid>{049CBBBB-8941-4371-8A7D-0896A1CA3D37}</ProjectGuid>
+    <RootNamespace>TaTeTiClient</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -115,13 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Librerias gentille\Libreria.cpp" />
-    <ClCompile Include="..\..\TaTeTi_Libs\TA-TE-TI\Tablero.cpp" />
-    <ClCompile Include="Server.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\Librerias gentille\Libreria.h" />
-    <ClInclude Include="..\..\TaTeTi_Libs\TA-TE-TI\Tablero.h" />
+    <ClCompile Include="Client.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
