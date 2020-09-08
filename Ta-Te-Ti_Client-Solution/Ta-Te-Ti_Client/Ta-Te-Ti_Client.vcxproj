@@ -115,7 +115,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Librerias gentille\Libreria.cpp" />
+    <ClCompile Include="..\..\TaTeTi_Libs\TA-TE-TI\Tablero.cpp" />
     <ClCompile Include="Client.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Librerias gentille\Libreria.h" />
+    <ClInclude Include="..\..\TaTeTi_Libs\TA-TE-TI\Tablero.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
