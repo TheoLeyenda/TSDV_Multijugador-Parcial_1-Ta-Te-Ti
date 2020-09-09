@@ -17,7 +17,7 @@ public:
 	char jugada;
 	byte cmd;
 	char data[TAM_MENSAJE];
-	bool inWait;
+	//bool inWait;
 };
 struct ServerRequest 
 {
@@ -26,7 +26,6 @@ public:
 	Tablero *tablero;
 	char messenge[TAM_MENSAJE] = { "Turno del oponente, por favor espere..." };
 };
-
 struct ClientData
 {
 public:
@@ -102,6 +101,7 @@ bool CheckMove(ClientData &client, int &turno, Tablero* tablero)
 	if (tablero == NULL) return false;
 	cout << "Entre al CheckMove" << endl;
 	bool enableMove = false;
+	cout << client.numberPlayer << "=" << turno << endl;
 	if (client.numberPlayer == turno)
 	{
 		cout << "Es mi turno" << endl;
@@ -184,9 +184,9 @@ void ShowDataClient(ClientData client)
 }
 int main()
 {
-	int turno = LIMITE_INFERIOR + rand() % (LIMITE_SUPERIOR + 1 - LIMITE_INFERIOR);
-	srand(time(NULL));
+	srand(time(0));
 	int puerto = 8900;
+	int turno = LIMITE_INFERIOR + rand() % (LIMITE_SUPERIOR + 1 - LIMITE_INFERIOR);
 	//const char* ipHaciaMiMismo = "127.0.0.1";
 	int countClientes = 1;
 	int tipoTablero = 0;
@@ -264,6 +264,7 @@ int main()
 		{
 			cout << "Esperando Input..." << endl;
 			clientes[i].bytesInClient = recvfrom(listening, (char*)&clientes[i].clientMessage, sizeof(clientes[i].clientMessage), 0, (sockaddr*)&clientes[i].client, &clientes[i].clientSize);
+
 			if (clientes[i].bytesInClient == SOCKET_ERROR)
 			{
 				cerr << "Error al recibir data." << endl;
@@ -277,14 +278,14 @@ int main()
 			{
 			case 1:
 				cout << "MENSAJE_JUGADA" << endl;
-				cout << "Jugada:"<<clientes[i].clientMessage.jugada << endl;
-				cout << "Numero jugador:" << clientes[i].numberPlayer << endl;
-				cout << "turno: " << turno << endl;
+				//cout << "Jugada:"<<clientes[i].clientMessage.jugada << endl;
+				//cout << "Numero jugador:" << clientes[i].numberPlayer << endl;
+				//cout << "turno: " << turno << endl;
 				enableMove = CheckMove(clientes[i], turno, tablero);
 				if (!enableMove) 
 				{
 					serverRequest.cmd = 1;
-					//cout << "INFORME AL JUGADOR QUE NO ES SU TURNO" << endl;
+					cout << "INFORME AL JUGADOR QUE NO ES SU TURNO" << endl;
 					
 				}
 				else 

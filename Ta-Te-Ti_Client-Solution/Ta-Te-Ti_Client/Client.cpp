@@ -18,7 +18,7 @@ public:
 	char jugada;
 	byte cmd;
 	char data[TAM_MENSAJE];
-	bool inWait;
+	//bool inWait;
 };
 struct ServerRequest
 {
@@ -29,9 +29,8 @@ public:
 };
 
 
-int SendMessege(const char* buf, sockaddr_in server, SOCKET out, int isOk)
+int SendMessege(const char* buf, sockaddr_in &server, SOCKET &out, int isOk)
 {
-	std::string msg = std::string(buf);
 	int sendOk = sendto(out, buf, sizeof(buf), 0, (sockaddr*)&server, sizeof(server));
 	if (sendOk == SOCKET_ERROR)
 	{
@@ -64,7 +63,7 @@ int CheckCommand(ClientMessage &msg)
 				{
 					std::cout << "Ingreso Invalido" << std::endl;
 					cin.get();
-					cin.get();
+					//cin.get();
 					return 0;
 				}
 				else 
@@ -111,6 +110,9 @@ int main()
 
 	int serverSize = sizeof(server);
 
+	msg.cmd = -1;
+	SendMessege((char*)&msg, server, out, isOk);
+
 	//std::cin.get();	
 	while (!ExitChat)
 	{
@@ -127,7 +129,8 @@ int main()
 			std::cin.getline(msg.data, TAM_MENSAJE);
 			typeMensaje = CheckCommand(msg);
 			msg.cmd = typeMensaje;
-			//std::cout << msg.jugada << std::endl;
+			std::cout << msg.jugada << std::endl;
+			std::cin.get();
 			//std::cout << typeMensaje << std::endl;
 		}
 		while (typeMensaje == 0);
