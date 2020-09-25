@@ -2,6 +2,7 @@
 
 int main() 
 {
+	srand(time(NULL));
 	Server* server = new Server(8900);
 
 	server->Initialize();

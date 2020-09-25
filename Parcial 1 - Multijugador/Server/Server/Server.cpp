@@ -67,6 +67,10 @@ void Server::ListenForMessages()
 		case 0:
 			if (msg.gameState == msg.None)
 			{
+				//mapPartys[indexPartys].GenerateTurn();
+				//mapPartys[indexPartys].GenerateTurn(); 
+				//mapPartys[indexPartys].GenerateTurn();
+
 				indexClientes++;
 				msg.ID = indexClientes; // 2
 				msg.gameState = msg.InLobby;
@@ -90,6 +94,8 @@ void Server::ListenForMessages()
 					//std::cout << "CONTRINCANTE PLAYER 1: " << mapPartys[indexPartys].player1.aliasContrincante.c_str() << std::endl;
 					//std::cout << "CONTRINCANTE PLAYER 2: " << mapPartys[indexPartys].player2.aliasContrincante.c_str() << std::endl;
 
+					mapPartys[indexPartys].GenerateTurn();
+
 					indexPartys++;
 					countElementsPartys++;
 				}
@@ -100,32 +106,35 @@ void Server::ListenForMessages()
 			{
 				
 				std::cout << "ENTRE AL REGISTRO DE USUARIOS" << std::endl;
-				if (mapPartys[indexPartys-1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
+				if (mapPartys[indexPartys - 1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
 				{
 					countResetInGameEvent++;
 					mapPartys[indexPartys - 1].player1.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
 					msg.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
-					//msg_enemy = mapPartys[indexPartys - 1].player2;
-					//msg_enemy.firstMove = true;
+
 					msg.aliasContrincante = mapPartys[indexPartys - 1].player2.alias;
+					msg.turn = mapPartys[indexPartys - 1].player1.turn;
+					msg.gameState = mapPartys[indexPartys - 1].player1.gameState;
+
 				}
-				else if (mapPartys[indexPartys-1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
+				else if (mapPartys[indexPartys - 1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
 				{
 					countResetInGameEvent++;
 					mapPartys[indexPartys - 1].player2.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
 					msg.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
-					//msg_enemy = mapPartys[indexPartys - 1].player1;
-					//msg_enemy.firstMove = true;
+
 					msg.aliasContrincante = mapPartys[indexPartys - 1].player1.alias;
+					msg.turn = mapPartys[indexPartys - 1].player2.turn;
+					msg.gameState = mapPartys[indexPartys - 1].player2.gameState;
 				}
-				msg.gameState = msg.WaitMyTurn;
-				if (countResetInGameEvent >= 2) 
+				//msg.gameState = msg.WaitMyTurn;
+				if (countResetInGameEvent >= 2)
 				{
 					std::cout << "LOS DOS USUARIOS ESTAN EN JUEGO" << std::endl;
-					msg.turn = true;
+					//msg.turn = true;
 					inGameEvent = false;
 					countResetInGameEvent = 0;
-					msg.gameState = msg.InGame;
+					//msg.gameState = msg.InGame;
 				}
 			}
 			std::cout << "Player1 - ID: " << mapPartys[indexPartys - 1].player1.ID << " = " << msg.ID << std::endl;

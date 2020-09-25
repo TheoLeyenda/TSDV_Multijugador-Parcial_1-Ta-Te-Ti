@@ -3,6 +3,8 @@
 #include<iostream>
 #include <map>
 #include <WS2tcpip.h>
+#include <stdlib.h>
+#include <time.h>
 
 #pragma comment (lib,"ws2_32.lib")
 class Server
@@ -58,6 +60,28 @@ private:
 		bool PlayAgain_Player2 = false;
 		int countVotos = 0;
 		const int maxVotos = 2;
+		int assignedTurn = 0;
+		void GenerateTurn()
+		{
+			assignedTurn = rand() % 100 + 1;
+
+			std::cout << assignedTurn << std::endl;
+
+			if (assignedTurn > 50)
+			{
+				player1.turn = true;
+				player1.gameState = Server::ClientMenssage::GameState::InGame;
+				player2.turn = false;
+				player2.gameState = Server::ClientMenssage::GameState::WaitMyTurn;
+			}
+			else
+			{
+				player1.turn = false;
+				player1.gameState = Server::ClientMenssage::GameState::WaitMyTurn;
+				player2.turn = true;
+				player2.gameState = Server::ClientMenssage::GameState::InGame;
+			}
+		}
 	};
 	// Server Data
 	WSADATA data;
