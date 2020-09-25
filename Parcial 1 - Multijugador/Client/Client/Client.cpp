@@ -129,6 +129,10 @@ void Client::ShowLocationClient()
 			cout << "                                    " << endl;
 			gotoxy(25, 3);
 			cout << "                                    " << endl;
+			gotoxy(25, 4);
+			cout << "                                    " << endl;
+			gotoxy(30, 2);
+			cout << "                                    " << endl;
 			gotoxy(30, 2);
 			cout << "|MENU|" << endl;
 			gotoxy(25, 3);
@@ -140,10 +144,22 @@ void Client::ShowLocationClient()
 	case ClientMenssage::GameState::InLobby:
 		gotoxy(30, 2);
 		cout << "                                    " << endl;
+		gotoxy(25, 3);
+		cout << "                                    " << endl;
+		gotoxy(25, 4);
+		cout << "                                    " << endl;
+		gotoxy(30, 2);
+		cout << "                                    " << endl;
 		gotoxy(30, 2);
 		cout << "|SALA DE ESPERA|" << endl;
 		break;
 	case ClientMenssage::GameState::InGame:
+		gotoxy(30, 2);
+		cout << "                                    " << endl;
+		gotoxy(25, 3);
+		cout << "                                    " << endl;
+		gotoxy(25, 4);
+		cout << "                                    " << endl;
 		gotoxy(30, 2);
 		cout << "                                    " << endl;
 		gotoxy(30, 2);
@@ -156,6 +172,12 @@ void Client::ShowLocationClient()
 	case ClientMenssage::GameState::WaitMyTurn:
 		gotoxy(30, 2);
 		cout << "                                    " << endl;
+		gotoxy(25, 3);
+		cout << "                                    " << endl;
+		gotoxy(25, 4);
+		cout << "                                    " << endl;
+		gotoxy(30, 2);
+		cout << "                                    " << endl;
 		gotoxy(30, 2);
 		cout << "|PARTIDA EN CURSO|" << endl;
 		gotoxy(30, 4);
@@ -166,6 +188,12 @@ void Client::ShowLocationClient()
 	case ClientMenssage::GameState::Win:
 		gotoxy(30, 2);
 		cout << "                                    " << endl;
+		gotoxy(25, 3);
+		cout << "                                    " << endl;
+		gotoxy(25, 4);
+		cout << "                                    " << endl;
+		gotoxy(30, 2);
+		cout << "                                    " << endl;
 		gotoxy(30, 2);
 		cout << "|GANASTE! :D|" << endl;
 		gotoxy(30, 4);
@@ -174,12 +202,24 @@ void Client::ShowLocationClient()
 	case ClientMenssage::GameState::Lose:
 		gotoxy(30, 2);
 		cout << "                                    " << endl;
+		gotoxy(25, 3);
+		cout << "                                    " << endl;
+		gotoxy(25, 4);
+		cout << "                                    " << endl;
+		gotoxy(30, 2);
+		cout << "                                    " << endl;
 		gotoxy(30, 2);
 		cout << "|PERDISTE! D:|" << endl;
 		gotoxy(30, 4);
 		cout << "                                    " << endl;
 		break;
 	case ClientMenssage::GameState::Tie:
+		gotoxy(30, 2);
+		cout << "                                    " << endl;
+		gotoxy(25, 3);
+		cout << "                                    " << endl;
+		gotoxy(25, 4);
+		cout << "                                    " << endl;
 		gotoxy(30, 2);
 		cout << "                                    " << endl;
 		gotoxy(30, 2);
