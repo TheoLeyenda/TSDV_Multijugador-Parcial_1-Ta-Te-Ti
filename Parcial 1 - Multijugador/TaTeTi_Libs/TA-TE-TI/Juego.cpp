@@ -126,6 +126,7 @@ void Juego::UpdateUsuario()
 	_cliente->ShowLocationClient();
 	DibujarTablero();
 	_cliente->ShowAlias(0,12);
+	//bool buscarPartida = false;
 	while (EnJuego)
 	{
 		Raylib::BeginDrawing();
@@ -137,11 +138,11 @@ void Juego::UpdateUsuario()
 				if (!firstOnceInGame)
 				{
 					_cliente->ShowLocationClient();
-					if (Raylib::IsKeyPressed(Raylib::KEY_ONE))
+					if (Raylib::IsKeyPressed(Raylib::KEY_ONE) /*|| buscarPartida*/)
 					{
-						_cliente->SetGameState(1);
 						_cliente->SendMSG();
 						_cliente->ListenForMessages();
+						//buscarPartida = true;
 					}
 					if (Raylib::IsKeyPressed(Raylib::KEY_TWO))
 					{
