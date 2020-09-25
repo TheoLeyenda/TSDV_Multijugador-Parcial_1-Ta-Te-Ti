@@ -23,13 +23,15 @@ public:
 		bool turn = false;
 		int input = 0;
 		std::string alias = "";
+		std::string aliasContrincante = " ";
 		GameState gameState = GameState::None;
 		int ID = -1;
 		int ID_Enemy = -1;
 		bool posicionesTablero[9];
 		int cmd = -1;
-		sockaddr_in from;
 		bool isMenu = false;
+		bool firstMove = false;
+		sockaddr_in from;
 		void Restart()
 		{
 			turn = false;
@@ -42,6 +44,8 @@ public:
 				posicionesTablero[i] = false;
 			}
 			cmd = -1;
+			aliasContrincante = " ";
+			firstMove = false;
 			isMenu = false;
 		}
 	};

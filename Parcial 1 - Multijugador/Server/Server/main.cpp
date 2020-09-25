@@ -2,7 +2,7 @@
 
 int main() 
 {
-	Server* server = new Server(9000);
+	Server* server = new Server(8900);
 
 	server->Initialize();
 	server->BindSocket();

@@ -24,12 +24,14 @@ public:
 		bool turn = false;
 		int input = 0;
 		std::string alias = "";
+		std::string aliasContrincante = " ";
 		GameState gameState = GameState::None;
 		int ID = -1;
 		int ID_Enemy = -1;
 		bool posicionesTablero[9];
 		int cmd = -1;
 		bool isMenu = false;
+		bool firstMove = false;
 		sockaddr_in from;
 		void Restart()
 		{
@@ -43,6 +45,8 @@ public:
 				posicionesTablero[i] = false;
 			}
 			cmd = -1;
+			aliasContrincante = " ";
+			firstMove = false;
 			isMenu = false;
 		}
 	};
@@ -71,7 +75,7 @@ private:
 public:
 	Client(int _port);
 
-	void ShowUsuarioName(int x, int y);
+	void ShowAlias(int x, int y);
 	// Startup Winsock
 	void Initialize();
 
@@ -107,7 +111,8 @@ public:
 	void ResetCMD();
 	void SetIsMenu(bool _isMenu);
 	bool GetIsMenu();
-
+	bool GetIsFirstMove();
+	void SetIsFirstMove(bool _firstMove);
 };
 
 #endif // CLIENT_H

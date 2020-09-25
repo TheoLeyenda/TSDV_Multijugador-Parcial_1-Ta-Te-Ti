@@ -11,10 +11,12 @@ Client::Client(int _port) :port(_port)
 	}
 }
 
-void Client::ShowUsuarioName(int x, int y)
+void Client::ShowAlias(int x, int y)
 {
 	gotoxy(x, y);
 	cout << "Usuario: " << msg.alias.c_str() << endl;
+	gotoxy(x, y+1);
+	cout << "Contrincante: " << msg.aliasContrincante.c_str() << endl;
 }
 
 void Client::Initialize()
@@ -32,6 +34,7 @@ void Client::Initialize()
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
+	//186.136.49.78
 	inet_pton(AF_INET, "127.0.0.1", &server.sin_addr);
 	std::cout << "Ingrese su alias: ";
 	std::cin.get();
@@ -311,6 +314,16 @@ void Client::SetIsMenu(bool _isMenu)
 bool Client::GetIsMenu()
 {
 	return msg.isMenu;
+}
+
+bool Client::GetIsFirstMove()
+{
+	return msg.firstMove;
+}
+
+void Client::SetIsFirstMove(bool _firstMove)
+{
+	msg.firstMove = _firstMove;
 }
 
 

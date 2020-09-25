@@ -31,6 +31,7 @@ void Server::Initialize()
 	server.sin_family = AF_INET;
 	server.sin_addr.S_un.S_addr = ADDR_ANY;
 	server.sin_port = htons(port);
+	//192.168.0.15
 	inet_pton(AF_INET, "127.0.0.1", &server.sin_addr);
 }
 
@@ -72,6 +73,7 @@ void Server::ListenForMessages()
 				std::cout << "Entre al lobby" << std::endl;
 				msg.from = from;
 				mapClients[indexClientes] = msg;
+				msg.firstMove = true;
 				if (indexClientes % 2 == 0)
 				{
 					inGameEvent = true;
@@ -81,27 +83,40 @@ void Server::ListenForMessages()
 
 					mapPartys[indexPartys].player1 = mapClients[indexClientes - 1];
 					mapPartys[indexPartys].player2 = mapClients[indexClientes];
-					indexPartys++; 
+
+					mapPartys[indexPartys].player1.aliasContrincante = mapPartys[indexPartys].player2.alias;
+					mapPartys[indexPartys].player2.aliasContrincante = mapPartys[indexPartys].player1.alias;
+
+					//std::cout << "CONTRINCANTE PLAYER 1: " << mapPartys[indexPartys].player1.aliasContrincante.c_str() << std::endl;
+					//std::cout << "CONTRINCANTE PLAYER 2: " << mapPartys[indexPartys].player2.aliasContrincante.c_str() << std::endl;
+
+					indexPartys++;
 					countElementsPartys++;
-					
 				}
 			}
 			else if ((mapPartys[indexPartys-1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
 			|| (mapPartys[indexPartys-1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
 				&& inGameEvent)
 			{
+				
 				std::cout << "ENTRE AL REGISTRO DE USUARIOS" << std::endl;
 				if (mapPartys[indexPartys-1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
 				{
 					countResetInGameEvent++;
 					mapPartys[indexPartys - 1].player1.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
 					msg.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
+					//msg_enemy = mapPartys[indexPartys - 1].player2;
+					//msg_enemy.firstMove = true;
+					msg.aliasContrincante = mapPartys[indexPartys - 1].player2.alias;
 				}
 				else if (mapPartys[indexPartys-1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
 				{
 					countResetInGameEvent++;
 					mapPartys[indexPartys - 1].player2.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
 					msg.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
+					//msg_enemy = mapPartys[indexPartys - 1].player1;
+					//msg_enemy.firstMove = true;
+					msg.aliasContrincante = mapPartys[indexPartys - 1].player1.alias;
 				}
 				msg.gameState = msg.WaitMyTurn;
 				if (countResetInGameEvent >= 2) 

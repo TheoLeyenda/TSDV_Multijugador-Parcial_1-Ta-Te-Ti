@@ -102,7 +102,7 @@ void Juego::Dibujar(char jugador, int input)
 void Juego::CrearUsuario()
 {
 	if (_cliente == NULL) {
-		_cliente = new Client(9000);
+		_cliente = new Client(8900);
 		_cliente->Initialize();
 	}
 }
@@ -125,7 +125,7 @@ void Juego::UpdateUsuario()
 	_cliente->ListenForMessages();
 	_cliente->ShowLocationClient();
 	DibujarTablero();
-	_cliente->ShowUsuarioName(0,12);
+	_cliente->ShowAlias(0,12);
 	while (EnJuego)
 	{
 		Raylib::BeginDrawing();
@@ -164,9 +164,17 @@ void Juego::UpdateUsuario()
 		{
 			//gotoxy(50, 30);
 			//cout << "ME TRABE OWO" << endl;
+			if (_cliente->GetIsFirstMove())
+			{
+				_cliente->SetIsFirstMove(false);
+				//_cliente->ListenForMessages();
+				DibujarTablero();
+				_cliente->ShowAlias(0, 12);
+			}
 			_cliente->SetCMD(0);
 			//_cliente->SendMSG();
 			_cliente->ListenOtherMassages(false);
+
 			//gotoxy(50, 30);
 			//cout << "ME RESPONDIO UWU" << endl;
 			switch (_cliente->GetCMD())
@@ -256,6 +264,13 @@ void Juego::UpdateUsuario()
 		}
 		else if (_cliente->GetGameState() == Client::ClientMenssage::GameState::InGame)
 		{
+			if (_cliente->GetIsFirstMove()) 
+			{
+				_cliente->SetIsFirstMove(false);
+				//_cliente->ListenForMessages();
+				DibujarTablero();
+				_cliente->ShowAlias(0, 12);
+			}
 			//gotoxy(50, 22);
 			//cout << "ENTRE AL IN_GAME" << endl;
 			if (Raylib::IsKeyPressed(Raylib::KEY_ONE) && _cliente->GetTurn())
