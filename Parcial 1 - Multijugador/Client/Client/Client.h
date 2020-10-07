@@ -58,16 +58,18 @@ private:
 	WSADATA data;
 	WORD version;
 	int port;
+	struct timeval tv;
 	SOCKET sock = INVALID_SOCKET;
 	sockaddr_in server;
 	ClientMenssage msg;
 	ClientMenssage auxMsg;
-
+	fd_set master;
 	// Server Data
 	sockaddr_in from;
 	char dataBuffer[1024];
 	int dataLenght;
 	char serverIp[256];
+	bool clienteBloqueante;
 	
 private:
 	void ShowReceivedMessage();
@@ -76,19 +78,14 @@ public:
 	Client(int _port);
 
 	void ShowAlias(int x, int y);
-	// Startup Winsock
+
 	void Initialize();
 
 	void SendMSG();
 
-	// Enter a loop
-	// Wait for message
-	// Display message and client info
 	void ListenForMessages();
 	void ListenOtherMassages(bool takeGameState);
 
-	// Close socket
-	// Shutdown winsock
 	void ShowLocationClient();
 	void Shutdown();
 	void SetInput(int _input);

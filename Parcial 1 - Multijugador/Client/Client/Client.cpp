@@ -21,6 +21,7 @@ void Client::ShowAlias(int x, int y)
 
 void Client::Initialize()
 {
+	clienteBloqueante = true;
 	version = MAKEWORD(2, 2);
 	int wsOk = WSAStartup(version, &data);
 	if (wsOk != 0)
@@ -40,6 +41,8 @@ void Client::Initialize()
 	std::cin.get();
 	getline(std::cin, msg.alias);
 	
+	tv.tv_sec = 0; //seconds
+	tv.tv_usec = 10000; //miliseconds
 }
 
 void Client::SendMSG()
@@ -56,49 +59,70 @@ void Client::SendMSG()
 
 void Client::ListenForMessages()
 {
-	dataLenght = sizeof(from);
-	ZeroMemory(&from, dataLenght);
-	ZeroMemory(dataBuffer, 1024);
-	int bytesIn = recvfrom(sock, (char*)&msg, sizeof(msg), 0, (sockaddr*)&from, &dataLenght);
-	if (bytesIn == SOCKET_ERROR)
+	int result;
+
+	FD_ZERO(&master);
+
+	FD_SET(sock, &master);
+
+	result = select(sock, &master, NULL, NULL, &tv);
+	if (result > 0 || clienteBloqueante)
 	{
-		cout << "Error al resivir el mensaje del servidor " << WSAGetLastError() << endl;
-		cin.get();
-	}
-	else {
-		ZeroMemory(serverIp, 256);
-		ShowReceivedMessage();
+		dataLenght = sizeof(from);
+		ZeroMemory(&from, dataLenght);
+		ZeroMemory(dataBuffer, 1024);
+		int bytesIn = recvfrom(sock, (char*)&msg, sizeof(msg), 0, (sockaddr*)&from, &dataLenght);
+		if (bytesIn == SOCKET_ERROR)
+		{
+			cout << "Error al resivir el mensaje del servidor " << WSAGetLastError() << endl;
+			cin.get();
+		}
+		else {
+			ZeroMemory(serverIp, 256);
+			ShowReceivedMessage();
+		}
 	}
 }
 
 void Client::ListenOtherMassages(bool takeGameState)
 {
-	dataLenght = sizeof(from);
-	ZeroMemory(&from, dataLenght);
-	ZeroMemory(dataBuffer, 1024);
-	int bytesIn = recvfrom(sock, (char*)&auxMsg, sizeof(auxMsg), 0, (sockaddr*)&from, &dataLenght);
+	int result;
 
-	msg.input = auxMsg.input;
-	msg.cmd = auxMsg.cmd;
-	for (int i = 0; i < 9; i++) 
+	FD_ZERO(&master);
+
+	FD_SET(sock, &master);
+
+	result = select(sock, &master, NULL, NULL, &tv);
+	if (result > 0 || clienteBloqueante)
 	{
-		msg.posicionesTablero[i] = auxMsg.posicionesTablero[i];
-	}
-	if (takeGameState) 
-	{
-		msg.gameState = auxMsg.gameState;
-		//int x = 25;
-		//int y = 20;
-		//gotoxy(x, y + 4);
-	}
-	if (bytesIn == SOCKET_ERROR)
-	{
-		cout << "Error al resivir el mensaje del servidor " << WSAGetLastError() << endl;
-		cin.get();
-	}
-	else {
-		ZeroMemory(serverIp, 256);
-		ShowReceivedMessage();
+
+		dataLenght = sizeof(from);
+		ZeroMemory(&from, dataLenght);
+		ZeroMemory(dataBuffer, 1024);
+		int bytesIn = recvfrom(sock, (char*)&auxMsg, sizeof(auxMsg), 0, (sockaddr*)&from, &dataLenght);
+
+		msg.input = auxMsg.input;
+		msg.cmd = auxMsg.cmd;
+		for (int i = 0; i < 9; i++)
+		{
+			msg.posicionesTablero[i] = auxMsg.posicionesTablero[i];
+		}
+		if (takeGameState)
+		{
+			msg.gameState = auxMsg.gameState;
+			//int x = 25;
+			//int y = 20;
+			//gotoxy(x, y + 4);
+		}
+		if (bytesIn == SOCKET_ERROR)
+		{
+			cout << "Error al resivir el mensaje del servidor " << WSAGetLastError() << endl;
+			cin.get();
+		}
+		else {
+			ZeroMemory(serverIp, 256);
+			ShowReceivedMessage();
+		}
 	}
 }
 

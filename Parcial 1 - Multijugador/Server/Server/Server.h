@@ -2,9 +2,26 @@
 #define SERVER_H
 #include<iostream>
 #include <map>
-#include <WS2tcpip.h>
 #include <stdlib.h>
 #include <time.h>
+
+//INICIALIZAMOS MULTIPLATAFORMA
+#ifdef _WIN32
+#include <WS2tcpip.h>
+/* See http://stackoverflow.com/questions/12765743/getaddrinfo-on-win32 */
+	#ifndef _WIN32_WINNT
+		#define _WIN32_WINNT 0x0501  /* Windows XP. */
+	#endif
+
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+#else
+/* Assume that any non-Windows platform uses POSIX-style sockets instead. */
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
+#include <unistd.h> /* Needed for close() */
+#endif
 
 #pragma comment (lib,"ws2_32.lib")
 class Server
@@ -86,10 +103,14 @@ private:
 	// Server Data
 	WSADATA data;
 	WORD version;
-	SOCKET sock;
 	sockaddr_in server;
+	
+	fd_set master;
+	SOCKET listener;
+	int nbytes;
+	struct timeval tv;
+
 	int port;
-	bool shutdown = false;
 	//bool sendSpecificClient = false;
 
 	// Client Data
@@ -113,6 +134,7 @@ public:
 	//Inicializa al servidor
 	void Initialize();
 
+	int SockInit();
 	//Bindea los sockets del servidor
 	void BindSocket();
 
@@ -129,8 +151,7 @@ public:
 	void SendMSG(sockaddr_in &socketClient, ClientMenssage _msg);
 	
 	//cierro el servidor
-	void Shutdown();
-
+	int Shutdown();
 	//Logica del juego
 	void CheckTurnPlayer(int input, bool playEnabled, int size); // Recorre los dicionarios de partidas y chekea que la jugada sea valida segun el turno del jugador
 

@@ -1,7 +1,7 @@
 #include "Server.h"
 #include <string>
-#include <stdlib.h>
-#include <time.h>
+
+int SockClose(SOCKET sock);
 
 Server::Server(int _port):port(_port)
 {
@@ -11,20 +11,33 @@ Server::Server(int _port):port(_port)
 		msg.posicionesTablero[i] = false;
 	}
 }
+int Server::SockInit()
+{
+  #ifdef _WIN32
+	version = MAKEWORD(2, 2);
+    return WSAStartup(version, &data);
+  #else
+    return 0;
+  #endif
+}
+
 
 void Server::Initialize()
 {
-	version = MAKEWORD(2, 2);
-	int wsOk = WSAStartup(version, &data);
+	int wsOk = SockInit();
+
+	tv.tv_sec = 0; //seconds
+	tv.tv_usec = 10000; //miliseconds
+
 	if (wsOk != 0)
 	{
 		std::cout << "SERVER: Error, no se pudo iniciar winsock! " << wsOk;
 		return;
 	}
 	std::cout << "SERVER: El Servidor se inicio correctamente!" << std::endl;
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-	if (sock < 0)
+	listener = socket(AF_INET, SOCK_DGRAM, 0);
+	if (listener < 0)
 	{
 		std::cout << "SERVER: Error al abrir el socket" << std::endl;
 	}
@@ -37,7 +50,7 @@ void Server::Initialize()
 
 void Server::BindSocket()
 {
-	if (bind(sock, (sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
+	if (bind(listener, (sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
 		std::cout << "SERVER: Error, no se pudo bindear el socket! " << WSAGetLastError() << std::endl;
 		return;
@@ -50,137 +63,139 @@ void Server::BindSocket()
 
 void Server::ListenForMessages()
 {
+	int result;
 	bool inGameEvent = false;
 	int countResetInGameEvent = 0;
 	int countElementsPartys = 0;
-	while (!shutdown)
+	int bytesIn;
+	for(;;)
 	{
-		int bytesIn = recvfrom(sock, (char*)&msg, sizeof(msg), 0, (sockaddr*)&from, &dataLenght);
-		if (bytesIn == SOCKET_ERROR)
+		FD_ZERO(&master);
+
+		FD_SET(listener, &master);
+
+		result = select(listener, &master, NULL, NULL, &tv);
+		if (result > 0) 
 		{
-			std::cout << "SERVER: Error al resivir el mensaje del cliente " << WSAGetLastError() << std::endl;
-			continue;
-		}
+			bytesIn = recvfrom(listener, (char*)&msg, sizeof(msg), 0, (sockaddr*)&from, &dataLenght);
 
-		switch (msg.input)
-		{
-		case 0:
-			if (msg.gameState == msg.None)
+			switch (msg.input)
 			{
-				//mapPartys[indexPartys].GenerateTurn();
-				//mapPartys[indexPartys].GenerateTurn(); 
-				//mapPartys[indexPartys].GenerateTurn();
-
-				indexClientes++;
-				msg.ID = indexClientes; // 2
-				msg.gameState = msg.InLobby;
-				std::cout << "Entre al lobby" << std::endl;
-				msg.from = from;
-				mapClients[indexClientes] = msg;
-				msg.firstMove = true;
-				if (indexClientes % 2 == 0)
+			case 0:
+				if (msg.gameState == msg.None)
 				{
-					inGameEvent = true;
-					std::cout << "ENTRE" << std::endl;
-					mapClients[indexClientes - 1].gameState = msg.InGame;
-					mapClients[indexClientes].gameState = msg.InGame;
 
-					mapPartys[indexPartys].player1 = mapClients[indexClientes - 1];
-					mapPartys[indexPartys].player2 = mapClients[indexClientes];
+					indexClientes++;
+					msg.ID = indexClientes; // 2
+					msg.gameState = msg.InLobby;
+					std::cout << "Entre al lobby" << std::endl;
+					msg.from = from;
+					mapClients[indexClientes] = msg;
+					msg.firstMove = true;
+					if (indexClientes % 2 == 0)
+					{
+						inGameEvent = true;
+						std::cout << "ENTRE" << std::endl;
+						mapClients[indexClientes - 1].gameState = msg.InGame;
+						mapClients[indexClientes].gameState = msg.InGame;
 
-					mapPartys[indexPartys].player1.aliasContrincante = mapPartys[indexPartys].player2.alias;
-					mapPartys[indexPartys].player2.aliasContrincante = mapPartys[indexPartys].player1.alias;
+						mapPartys[indexPartys].player1 = mapClients[indexClientes - 1];
+						mapPartys[indexPartys].player2 = mapClients[indexClientes];
 
-					//std::cout << "CONTRINCANTE PLAYER 1: " << mapPartys[indexPartys].player1.aliasContrincante.c_str() << std::endl;
-					//std::cout << "CONTRINCANTE PLAYER 2: " << mapPartys[indexPartys].player2.aliasContrincante.c_str() << std::endl;
+						mapPartys[indexPartys].player1.aliasContrincante = mapPartys[indexPartys].player2.alias;
+						mapPartys[indexPartys].player2.aliasContrincante = mapPartys[indexPartys].player1.alias;
 
-					mapPartys[indexPartys].GenerateTurn();
+						mapPartys[indexPartys].GenerateTurn();
 
-					indexPartys++;
-					countElementsPartys++;
+						indexPartys++;
+						countElementsPartys++;
+					}
 				}
+				else if ((mapPartys[indexPartys - 1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
+					|| (mapPartys[indexPartys - 1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
+					&& inGameEvent)
+				{
+
+					std::cout << "ENTRE AL REGISTRO DE USUARIOS" << std::endl;
+					if (mapPartys[indexPartys - 1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
+					{
+						countResetInGameEvent++;
+						mapPartys[indexPartys - 1].player1.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
+						msg.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
+
+						msg.aliasContrincante = mapPartys[indexPartys - 1].player2.alias;
+						msg.turn = mapPartys[indexPartys - 1].player1.turn;
+						msg.gameState = mapPartys[indexPartys - 1].player1.gameState;
+
+					}
+					else if (mapPartys[indexPartys - 1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
+					{
+						countResetInGameEvent++;
+						mapPartys[indexPartys - 1].player2.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
+						msg.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
+
+						msg.aliasContrincante = mapPartys[indexPartys - 1].player1.alias;
+						msg.turn = mapPartys[indexPartys - 1].player2.turn;
+						msg.gameState = mapPartys[indexPartys - 1].player2.gameState;
+					}
+					if (countResetInGameEvent >= 2)
+					{
+						std::cout << "LOS DOS USUARIOS ESTAN EN JUEGO" << std::endl;
+						inGameEvent = false;
+						countResetInGameEvent = 0;
+					}
+				}
+				std::cout << "Player1 - ID: " << mapPartys[indexPartys - 1].player1.ID << " = " << msg.ID << std::endl;
+				std::cout << "Player2 - ID: " << mapPartys[indexPartys - 1].player2.ID << " = " << msg.ID << std::endl;
+				break;
+			case 1:
+				CheckTurnPlayer(1, !msg.posicionesTablero[0], countElementsPartys);
+				break;
+			case 2:
+				CheckTurnPlayer(2, !msg.posicionesTablero[1], countElementsPartys);
+				break;
+			case 3:
+				CheckTurnPlayer(3, !msg.posicionesTablero[2], countElementsPartys);
+				break;
+			case 4:
+				CheckTurnPlayer(4, !msg.posicionesTablero[3], countElementsPartys);
+				break;
+			case 5:
+				CheckTurnPlayer(5, !msg.posicionesTablero[4], countElementsPartys);
+				break;
+			case 6:
+				CheckTurnPlayer(6, !msg.posicionesTablero[5], countElementsPartys);
+				break;
+			case 7:
+				CheckTurnPlayer(7, !msg.posicionesTablero[6], countElementsPartys);
+				break;
+			case 8:
+				CheckTurnPlayer(8, !msg.posicionesTablero[7], countElementsPartys);
+				break;
+			case 9:
+				CheckTurnPlayer(9, !msg.posicionesTablero[8], countElementsPartys);
+				break;
+			case 10:
+				CheckPlayAgain(countElementsPartys, true);
+				break;
+			case 11:
+				CheckPlayAgain(countElementsPartys, false);
+				break;
 			}
-			else if ((mapPartys[indexPartys-1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
-			|| (mapPartys[indexPartys-1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
-				&& inGameEvent)
-			{
-				
-				std::cout << "ENTRE AL REGISTRO DE USUARIOS" << std::endl;
-				if (mapPartys[indexPartys - 1].player1.ID == msg.ID && msg.gameState == msg.InLobby)
-				{
-					countResetInGameEvent++;
-					mapPartys[indexPartys - 1].player1.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
-					msg.ID_Enemy = mapPartys[indexPartys - 1].player2.ID;
+			ZeroMemory(clientIp, 256);
+			ShowReceivedMessage();
 
-					msg.aliasContrincante = mapPartys[indexPartys - 1].player2.alias;
-					msg.turn = mapPartys[indexPartys - 1].player1.turn;
-					msg.gameState = mapPartys[indexPartys - 1].player1.gameState;
-
-				}
-				else if (mapPartys[indexPartys - 1].player2.ID == msg.ID && msg.gameState == msg.InLobby)
-				{
-					countResetInGameEvent++;
-					mapPartys[indexPartys - 1].player2.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
-					msg.ID_Enemy = mapPartys[indexPartys - 1].player1.ID;
-
-					msg.aliasContrincante = mapPartys[indexPartys - 1].player1.alias;
-					msg.turn = mapPartys[indexPartys - 1].player2.turn;
-					msg.gameState = mapPartys[indexPartys - 1].player2.gameState;
-				}
-				//msg.gameState = msg.WaitMyTurn;
-				if (countResetInGameEvent >= 2)
-				{
-					std::cout << "LOS DOS USUARIOS ESTAN EN JUEGO" << std::endl;
-					//msg.turn = true;
-					inGameEvent = false;
-					countResetInGameEvent = 0;
-					//msg.gameState = msg.InGame;
-				}
-			}
-			std::cout << "Player1 - ID: " << mapPartys[indexPartys - 1].player1.ID << " = " << msg.ID << std::endl;
-			std::cout << "Player2 - ID: " << mapPartys[indexPartys - 1].player2.ID << " = " << msg.ID << std::endl;
-			break;
-		case 1:
-			CheckTurnPlayer(1, !msg.posicionesTablero[0], countElementsPartys);
-			break;
-		case 2:
-			CheckTurnPlayer(2, !msg.posicionesTablero[1], countElementsPartys);
-			break;
-		case 3:
-			CheckTurnPlayer(3, !msg.posicionesTablero[2], countElementsPartys);
-			break;
-		case 4:
-			CheckTurnPlayer(4, !msg.posicionesTablero[3], countElementsPartys);
-			break;
-		case 5:
-			CheckTurnPlayer(5, !msg.posicionesTablero[4], countElementsPartys);
-			break;
-		case 6:
-			CheckTurnPlayer(6, !msg.posicionesTablero[5], countElementsPartys);
-			break;
-		case 7:
-			CheckTurnPlayer(7, !msg.posicionesTablero[6], countElementsPartys);
-			break;
-		case 8:
-			CheckTurnPlayer(8, !msg.posicionesTablero[7], countElementsPartys);
-			break;
-		case 9:
-			CheckTurnPlayer(9, !msg.posicionesTablero[8], countElementsPartys);
-			break;
-		case 10:
-			CheckPlayAgain(countElementsPartys, true);
-			break;
-		case 11:
-			CheckPlayAgain(countElementsPartys, false);
-			break;
-		}
-		ZeroMemory(clientIp, 256);
-		ShowReceivedMessage();
-
-		//if(!sendSpecificClient)
 			SendMSG();
-		//else 
-			//sendSpecificClient = false;
+		}
+		else if (result < 0) 
+		{
+			if (bytesIn == SOCKET_ERROR)
+			{
+				std::cout << "SERVER: Error al resivir el mensaje del cliente " << WSAGetLastError() << std::endl;
+				continue;
+			}
+		}
+
 	}
 }
 
@@ -196,14 +211,12 @@ void Server::CheckPlayAgain(int size, bool playAgain)
 		
 		if (mapPartys[i].player1.ID == msg.ID) 
 		{
-			//std::cout << "ENTRE AL PLAYER 1" << std::endl;
 			mapPartys[i].countVotos++;
 			mapPartys[i].PlayAgain_Player1 = playAgain;
 			msg_enemy = mapPartys[i].player2;
 			msg.cmd = 15;
 			if (!playAgain) 
 			{
-				//std::cout << "ADIOH PLAYER 1" << std::endl;
 				msg.cmd = 13;
 				msg_enemy.cmd = 13;
 			}
@@ -211,14 +224,12 @@ void Server::CheckPlayAgain(int size, bool playAgain)
 		}
 		else if (mapPartys[i].player2.ID == msg.ID) 
 		{
-			//std::cout << "ENTRE AL PLAYER 2" << std::endl;
 			mapPartys[i].countVotos++;
 			mapPartys[i].PlayAgain_Player2 = playAgain;
 			msg_enemy = mapPartys[i].player1;
 			msg.cmd = 15;
 			if (!playAgain)
 			{
-				//std::cout << "ADIOH PLAYER 1" << std::endl;
 				msg.cmd = 13;
 				msg_enemy.cmd = 13;
 			}
@@ -227,7 +238,6 @@ void Server::CheckPlayAgain(int size, bool playAgain)
 		std::cout << mapPartys[i].countVotos<<"/"<< mapPartys[i].maxVotos << std::endl;
 		if (mapPartys[i].countVotos >= mapPartys[i].maxVotos) 
 		{
-			//std::cout << mapPartys[i].PlayAgain_Player2 << "/" << mapPartys[i].PlayAgain_Player1 << std::endl;
 			if (mapPartys[i].PlayAgain_Player1 && mapPartys[i].PlayAgain_Player2)
 			{
 				msg.cmd = 12;
@@ -249,16 +259,9 @@ void Server::CheckPlayAgain(int size, bool playAgain)
 				mapPartys[i].PlayAgain_Player1 = false;
 				mapPartys[i].PlayAgain_Player2 = false;
 
-				//std::cout << "ENVIE EL COCHINO MENSAJE" << std::endl;
-				//SendMSG(msg.from);
-				//SendMSG(msg.from);
 				std::cout << msg_enemy.gameState << " = " << msg.gameState << std::endl;
 				SendMSG(msg_enemy.from, msg_enemy);
-				//SendMSG(msg_enemy.from);
-				
-				//SendMSG(msg.from);
-				
-				//sendSpecificClient = true;
+
 				exitLoop = true;
 				mapPartys[i].countVotos = 0;
 			}
@@ -318,9 +321,7 @@ void Server::CheckTurnPlayer(int input, bool playEnabled, int size)
 
 void Server::SendMSG()
 {
-	//msg.ID = 777;
-	// Write out to that socket
-	int sendOk = sendto(sock, (char*)&msg, sizeof(msg), 0, (sockaddr*)&from, sizeof(from));
+	int sendOk = sendto(listener, (char*)&msg, sizeof(msg), 0, (sockaddr*)&from, sizeof(from));
 	if (sendOk == SOCKET_ERROR)
 	{
 		std::cout << " SERVER: No se pudo enviar el mensaje " << WSAGetLastError() << std::endl;
@@ -330,7 +331,7 @@ void Server::SendMSG()
 
 void Server::SendMSG(sockaddr_in &socketClient)
 {
-	int sendOk = sendto(sock, (char*)&msg, sizeof(msg), 0, (sockaddr*)&socketClient, sizeof(socketClient));
+	int sendOk = sendto(listener, (char*)&msg, sizeof(msg), 0, (sockaddr*)&socketClient, sizeof(socketClient));
 	if (sendOk == SOCKET_ERROR)
 	{
 		std::cout << " SERVER: No se pudo enviar el mensaje " << WSAGetLastError() << std::endl;
@@ -340,7 +341,7 @@ void Server::SendMSG(sockaddr_in &socketClient)
 
 void Server::SendMSG(sockaddr_in & socketClient, ClientMenssage _msg)
 {
-	int sendOk = sendto(sock, (char*)&_msg, sizeof(_msg), 0, (sockaddr*)&socketClient, sizeof(socketClient));
+	int sendOk = sendto(listener, (char*)&_msg, sizeof(_msg), 0, (sockaddr*)&socketClient, sizeof(socketClient));
 	if (sendOk == SOCKET_ERROR)
 	{
 		std::cout << " SERVER: No se pudo enviar el mensaje " << WSAGetLastError() << std::endl;
@@ -354,8 +355,28 @@ void Server::ShowReceivedMessage()
 	std::cout << "Mensaje recibido desde " << clientIp << ": " << msg.alias.c_str() << std::endl;
 }
 
-void Server::Shutdown()
+int SockClose(SOCKET sock)
 {
-	closesocket(sock);
-	WSACleanup();
+
+	int status = 0;
+
+#ifdef _WIN32
+	status = shutdown(sock, SD_BOTH);
+	if (status == 0) { status = closesocket(sock); }
+#else
+	status = shutdown(sock, SHUT_RDWR);
+	if (status == 0) { status = close(sock); }
+#endif
+
+	return status;
+}
+
+int Server::Shutdown()
+{
+	int status = SockClose(listener);
+#ifdef _WIN32
+	return WSACleanup();
+#else
+	return 0;
+#endif
 }
